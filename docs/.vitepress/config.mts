@@ -4,6 +4,7 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   title: "旅记",
   description: "日知录",
+  base: '/my-blog/',
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     outline: {
@@ -96,4 +97,148 @@ export default defineConfig({
     }
   },
 
+  // 添加评论组件注入
+  vite: {
+    plugins: [
+      {
+        name: 'giscus-inject',
+        transformIndexHtml(html) {
+          const giscusScript = `
+            <script>
+              (function() {
+                function injectGiscus() {
+                  const container = document.getElementById('giscus');
+                  if (container) {
+                    container.remove();
+                  }
+                  
+                  const div = document.createElement('div');
+                  div.id = 'giscus';
+                  div.style.marginTop = '3rem';
+                  div.style.paddingTop = '2rem';
+                  div.style.borderTop = '1px solid #eaeaea';
+                  
+                  const main = document.querySelector('main');
+                  if (main) {
+                    main.appendChild(div);
+                    
+                    const script = document.createElement('script');
+                    script.src = 'https://giscus.app/client.js';
+                    script.setAttribute('data-repo', 'AbellZhong/my-blog');
+                    script.setAttribute('data-repo-id', 'R_kgDOPJGc3A');
+                    script.setAttribute('data-category', 'General');
+                    script.setAttribute('data-category-id', 'DIC_kwDOPJGc3M4CsqGO');
+                    script.setAttribute('data-mapping', 'pathname');
+                    script.setAttribute('data-strict', '0');
+                    script.setAttribute('data-reactions-enabled', '1');
+                    script.setAttribute('data-emit-metadata', '0');
+                    script.setAttribute('data-input-position', 'bottom');
+                    script.setAttribute('data-theme', 'light');
+                    script.setAttribute('data-lang', 'zh-CN');
+                    script.async = true;
+                    
+                    div.appendChild(script);
+                    console.log('Giscus 已加载，路径:', window.location.pathname);
+                  }
+                }
+
+                function shouldShowComments() {
+                  const path = window.location.pathname;
+                  return path !== '/' && !path.endsWith('/') && !path.includes('/index.html');
+                }
+
+                // 初始加载
+                if (shouldShowComments()) {
+                  setTimeout(injectGiscus, 100);
+                }
+
+                // 使用 history API 监听路由变化
+                let currentPath = window.location.pathname;
+                
+                // 监听 popstate 事件（浏览器前进后退）
+                window.addEventListener('popstate', function() {
+                  if (window.location.pathname !== currentPath) {
+                    currentPath = window.location.pathname;
+                    console.log('路由变化 (popstate):', currentPath);
+                    if (shouldShowComments()) {
+                      setTimeout(injectGiscus, 100);
+                    } else {
+                      const container = document.getElementById('giscus');
+                      if (container) container.remove();
+                    }
+                  }
+                });
+
+                // 监听 pushstate 和 replacestate 事件
+                const originalPushState = history.pushState;
+                const originalReplaceState = history.replaceState;
+                
+                history.pushState = function() {
+                  originalPushState.apply(this, arguments);
+                  if (window.location.pathname !== currentPath) {
+                    currentPath = window.location.pathname;
+                    console.log('路由变化 (pushState):', currentPath);
+                    if (shouldShowComments()) {
+                      setTimeout(injectGiscus, 100);
+                    } else {
+                      const container = document.getElementById('giscus');
+                      if (container) container.remove();
+                    }
+                  }
+                };
+                
+                history.replaceState = function() {
+                  originalReplaceState.apply(this, arguments);
+                  if (window.location.pathname !== currentPath) {
+                    currentPath = window.location.pathname;
+                    console.log('路由变化 (replaceState):', currentPath);
+                    if (shouldShowComments()) {
+                      setTimeout(injectGiscus, 100);
+                    } else {
+                      const container = document.getElementById('giscus');
+                      if (container) container.remove();
+                    }
+                  }
+                };
+
+                // 备用方案：MutationObserver 监听 DOM 变化
+                const observer = new MutationObserver(function(mutations) {
+                  mutations.forEach(function(mutation) {
+                    if (mutation.type === 'childList') {
+                      // 检查是否有新的页面内容加载
+                      const hasNewContent = Array.from(mutation.addedNodes).some(node => 
+                        node.nodeType === 1 && (
+                          node.classList?.contains('content') || 
+                          node.querySelector?.('.content') ||
+                          node.tagName === 'MAIN'
+                        )
+                      );
+                      
+                      if (hasNewContent && window.location.pathname !== currentPath) {
+                        currentPath = window.location.pathname;
+                        console.log('路由变化 (MutationObserver):', currentPath);
+                        if (shouldShowComments()) {
+                          setTimeout(injectGiscus, 100);
+                        } else {
+                          const container = document.getElementById('giscus');
+                          if (container) container.remove();
+                        }
+                      }
+                    }
+                  });
+                });
+
+                observer.observe(document.body, { 
+                  childList: true, 
+                  subtree: true 
+                });
+              })();
+            </script>
+          `;
+          
+          return html.replace('</body>', giscusScript + '</body>');
+        }
+      }
+    ]
+  }
 })
