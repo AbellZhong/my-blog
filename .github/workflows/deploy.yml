@@ -11,21 +11,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0  # 获取完整的仓库历史
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8  # 使用 pnpm v8
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 18  # 使用 Node.js 18
+          cache: 'pnpm'  # 缓存 pnpm 依赖
 
       - name: Install dependencies
-        run: npm install
+        run: pnpm install  # 使用 pnpm 安装依赖
 
       - name: Build VitePress site
-        run: npm run docs:build
+        run: pnpm run docs:build  # 使用 pnpm 执行构建命令
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: .vitepress/dist
+          github_token: ${{ secrets.GITHUB_TOKEN }}  # GitHub 自动生成的 token
+          publish_dir: .vitepress/dist  # 指定构建输出目录
