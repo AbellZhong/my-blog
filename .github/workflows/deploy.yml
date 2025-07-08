@@ -30,24 +30,24 @@ jobs:
         run: pnpm install
 
       - name: Build VitePress site
-        run: |
-          pnpm run docs:build || (echo "构建失败，查看日志:" && cat .vitepress/dist/.temp/build.log && exit 1)
-        continue-on-error: true  # 允许步骤失败，继续执行后续步骤以获取更多信息
+        run: pnpm run docs:build  # 使用 package.json 中的命令
 
-      - name: Debug build output
+      - name: Verify dist directory
         run: |
-          echo "当前目录结构:"
-          ls -al
-          echo "检查 .vitepress 目录:"
-          ls -al .vitepress || echo ".vitepress 目录不存在"
-          echo "检查 package.json 中的构建脚本:"
-          cat package.json | grep scripts -A 5
-        if: always()  # 总是执行此步骤，无论前面是否失败
+          echo "检查 docs/.vitepress/dist 目录..."
+          if [ ! -d "docs/.vitepress/dist" ]; then
+            echo "❌ 错误：docs/.vitepress/dist 目录不存在！"
+            exit 1
+          fi
+          if [ -z "$(ls -A docs/.vitepress/dist)" ]; then
+            echo "❌ 错误：docs/.vitepress/dist 目录为空！"
+            exit 1
+          fi
+          echo "✅ 构建成功，dist 目录存在"
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: .vitepress/dist
+          publish_dir: docs/.vitepress/dist  # 关键：指向正确的 dist 路径
           force_orphan: true
-        if: success()  # 仅当构建成功时执行部署

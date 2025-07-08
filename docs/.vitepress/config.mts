@@ -4,6 +4,7 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   title: "旅记",
   description: "日知录",
+  srcDir: '.',
   base: '/my-blog/',
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
