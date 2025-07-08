@@ -1,0 +1,20 @@
+/* 调整头像大小和居中 */
+img[alt="测试头像"] {
+    width: 150px; /* 宽度，可按需改 */
+    height: auto; /* 高度自动适应，保持比例 */
+    display: block; /* 块状显示，方便居中 */
+    margin: 0 auto 1rem; /* 上下边距，底部留 1rem 间距 */
+    border-radius: 50%; /* 圆形头像效果，不想圆形可去掉 */
+}
+
+/* 调整评论框宽度 */
+.giscus-frame {
+    max-width: 100%;
+}
+
+/* 自定义主题颜色 */
+:root {
+    --giscus-border-color: #eaeaea;
+    --giscus-bg-color: #ffffff;
+    --giscus-text-color: #333333;
+}
